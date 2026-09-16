@@ -1,0 +1,70 @@
+const { test, expect, _electron: electron } = require('@playwright/test');
+const path = require('node:path');
+const fs = require('node:fs');
+const root = path.resolve(__dirname, '..');
+test('desktop tasks, notes, drink selection, reminder and restart persistence', async () => {
+  const dir = path.join(root, 'test-results', `desktop-${Date.now()}`);
+  fs.mkdirSync(dir, { recursive: true });
+  const launch = () => electron.launch({ args: [root], env: { ...process.env, BREW_TEST: '1', BREW_DATA_DIR: dir } });
+  let app = await launch();
+  async function panelWindow() {
+    for (let i = 0; i < 50; i++) { const pages = app.windows(); for (const page of pages) if (page.url().includes('view=panel')) return page; await new Promise(resolve => setTimeout(resolve, 100)); }
+    throw new Error('Panel did not load');
+  }
+  try {
+    let page = await panelWindow();
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await expect(page.getByText('No tasks', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Add task', exact: true }).click();
+    await page.getByLabel('Task', { exact: true }).fill('Finish the moodboard');
+    await page.getByRole('button', { name: 'Save task' }).click();
+    await expect(page.getByRole('button', { name: 'Edit Finish the moodboard' })).toBeVisible();
+    await page.getByRole('button', { name: 'Edit Finish the moodboard' }).click();
+    await page.getByLabel('Task', { exact: true }).fill('Review the moodboard');
+    await page.getByRole('button', { name: 'Save task' }).click();
+    await page.getByRole('button', { name: 'Notes', exact: true }).click();
+    await page.getByRole('textbox', { name: 'Notes', exact: true }).fill('Palette: cream, burgundy, blue.');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Saved' })).toBeVisible();
+    await page.getByRole('button', { name: 'Menu', exact: true }).click();
+    await page.getByRole('button', { name: /Matcha/ }).click();
+    await expect(page.getByRole('button', { name: /Matcha/ })).toHaveAttribute('aria-pressed', 'true');
+    await page.screenshot({ path: path.join(root, 'test-results', 'menu.png') });
+    await app.close();
+    app = await launch(); page = await panelWindow();
+    await expect(page.getByRole('button', { name: 'Edit Review the moodboard' })).toBeVisible();
+    const restored = await page.evaluate(() => window.brew.getState());
+    expect(restored.notes).toBe('Palette: cream, burgundy, blue.');
+    expect(restored.settings.drink).toBe('matcha');
+    await page.getByRole('button', { name: 'Complete Review the moodboard' }).click();
+    await expect(page.getByText('No tasks', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Completed', exact: true }).click();
+    await page.getByRole('button', { name: 'Reopen Review the moodboard' }).click();
+    await page.getByRole('button', { name: 'Back to tasks' }).click();
+    await page.getByRole('button', { name: 'Add task', exact: true }).click();
+    await page.getByLabel('Task', { exact: true }).fill('Keep this draft');
+    await page.evaluate(() => window.brew.dispatch({ type: 'save-task', title: 'Reminder test', dueAt: new Date(Date.now() - 1000).toISOString(), remindMinutes: 0 }));
+    await page.evaluate(() => window.brew.hidePanel());
+    const reminder = app.windows().find(w => w.url().includes('view=reminder'));
+    await expect(reminder.getByRole('region', { name: 'Task reminder' })).toBeVisible({ timeout: 15000 });
+    expect(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => w.webContents.getURL().includes('view=panel')).isVisible())).toBe(false);
+    expect(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => w.webContents.getURL().includes('view=reminder')).getSize())).toEqual([340, 180]);
+    await expect(page.getByLabel('Task', { exact: true })).toHaveValue('Keep this draft');
+    await reminder.screenshot({ path: path.join(root, 'docs/screenshots/reminder.png') });
+    await reminder.getByRole('button', { name: 'Snooze 10 min' }).click();
+    await expect(page.getByRole('region', { name: 'Task reminder' })).toHaveCount(0);
+    const snoozed = (await page.evaluate(() => window.brew.getState())).tasks.find(t => t.title === 'Reminder test');
+    expect(Date.parse(snoozed.snoozedUntil)).toBeGreaterThan(Date.now() + 590000);
+    expect(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => w.webContents.getURL().includes('view=panel')).isVisible())).toBe(false);
+    await page.evaluate(() => window.brew.togglePanel());
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await page.getByRole('button', { name: 'Delete Reminder test' }).click();
+    await page.getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Edit Reminder test' })).toHaveCount(0);
+    await page.screenshot({ path: path.join(root, 'test-results', 'tasks.png') });
+    const isolated = await page.evaluate(() => ({ node: typeof window.require, api: typeof window.brew }));
+    expect(isolated).toEqual({ node: 'undefined', api: 'object' });
+    expect(errors).toEqual([]);
+  } finally { await app.close(); }
+});

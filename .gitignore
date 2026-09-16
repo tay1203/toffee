@@ -1,0 +1,9 @@
+node_modules/
+dist/
+release/
+release-v*/
+.daily-brew-dev/
+test-results/
+playwright-report/
+*.log
+*.lnk

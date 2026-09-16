@@ -1,0 +1,19 @@
+.widget{width:100%;height:100%;display:block;position:relative;user-select:none}
+.widget-body #root{width:100vw;height:100vh}
+.widget .cup{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);cursor:grab;touch-action:none}
+.widget .cup:active{cursor:grabbing}
+.widget .cup .drink-art{width:100%;height:100%;left:0;top:0;transition:none}
+.widget .cup:hover .drink-art{transform:none}
+.widget .cup-count{right:7%;top:8%;pointer-events:none}
+.resize-handle{position:absolute;right:0;bottom:0;width:26px;height:26px;display:grid;place-items:center;cursor:nwse-resize;touch-action:none;color:#775b52;background:#fffaf0df;border:1px solid #e4d7ca;border-radius:7px;opacity:.55}
+.widget:hover .resize-handle,.resize-handle:focus-visible{opacity:1}
+.preview-widget{width:192px;height:192px}
+.preview-widget .widget{width:100%;height:100%}
+.preview-widget .widget .cup{width:calc(100% - 16px);height:calc(100% - 16px)}
+.preview-widget .widget .cup .drink-art{width:100%;height:100%}
+.toast-body{background:transparent;overflow:hidden}
+.toast{margin:8px;padding:12px 15px;background:var(--paper);border:1px solid #e4d7ca;border-radius:10px;box-shadow:0 3px 8px #35282122;height:164px;display:flex;flex-direction:column}
+.toast-heading{display:flex;align-items:center;gap:7px;color:var(--red);font-size:11px}
+.toast-heading .icon-button{margin-left:auto;width:22px;height:22px}
+.toast-title{font-size:13px;line-height:1.5;margin:9px 0 12px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.toast-actions{display:flex;gap:8px;margin-top:auto}
