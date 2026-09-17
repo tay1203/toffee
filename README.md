@@ -36,4 +36,4 @@ Open `release-v0.2/Toffee-0.2.0.exe` to use the packaged app.
 
 ## License
 
-No project-wide license has been specified. Bundled font licenses are included in `public/licenses/`.
+Licensed under the [MIT License](LICENSE). Bundled fonts retain their own licenses in `public/licenses/`.

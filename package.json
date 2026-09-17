@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "description": "A minimal coffee desktop widget for tasks and notes",
   "author": "Toffee",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "main": "electron/main.mjs",
@@ -23,6 +24,7 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
+      "LICENSE",
       "package.json"
     ],
     "win": {
