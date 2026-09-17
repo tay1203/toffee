@@ -36,10 +36,4 @@ Open `release-v0.2/Toffee-0.2.0.exe` to use the packaged app.
 
 ## License
 
-No project-wide license has been specified. Bundled fonts have their own licenses, linked below.
-
-## Credits
-
-- Drink artwork and app icon generated with Imagegen. See the [drink artwork prompt](docs/drink-art-prompt.md) and [icon prompt](docs/app-icon-prompt.md).
-- **Caveat Brush** for headings, bundled through Fontsource. [License](public/licenses/caveat-brush.txt).
-- **Manrope** for interface text, bundled through Fontsource. [License](public/licenses/manrope.txt).
+No project-wide license has been specified. Bundled font licenses are included in `public/licenses/`.
